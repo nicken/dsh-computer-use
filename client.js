@@ -86,6 +86,12 @@ const zh = {
   capLoadFailed: '无法读取电脑操作开关：{message}',
   capSaveFailed: '保存电脑操作开关失败：{message}',
   capNoSession: '缺少会话 id，无法读写电脑操作开关。',
+  advOnTitle: '高级工具面：开（computer + computer_screenshot）',
+  advOffTitle: '高级工具面：关（默认只有 1 个 computer 工具）',
+  advHint: '需要独立的 computer_screenshot 工具时再打开；默认截图已合并进 computer({action:"screenshot"})。',
+  advEnable: '开启高级工具面',
+  advDisable: '关闭高级工具面',
+  advSaving: '正在保存…',
 }
 
 const en = {
@@ -181,12 +187,13 @@ function routeUrl(suffix, query) {
 }
 
 /** Query and POST the per-conversation tool gate. */
-async function capabilityRequest(method, sessionId, enabled) {
+async function capabilityRequest(method, sessionId, patch) {
   const url = routeUrl(CAPABILITY_SUFFIX, { sessionId })
   const options = { method, credentials: 'same-origin', cache: 'no-store', headers: {} }
   if (method === 'POST') {
+    const body = typeof patch === 'boolean' ? { enabled: patch } : patch && typeof patch === 'object' ? patch : {}
     options.headers['content-type'] = 'application/json'
-    options.body = JSON.stringify({ sessionId, enabled })
+    options.body = JSON.stringify({ sessionId, ...body })
   }
   const response = await fetch(url, options)
   let payload = null
@@ -200,7 +207,10 @@ async function capabilityRequest(method, sessionId, enabled) {
   if (!payload || payload.ok !== true) throw new Error(hostReason || 'The capability route rejected the request.')
   const value = payload.value && typeof payload.value === 'object' ? payload.value : {}
   // Defensive: accept both the {ok,value:{enabled}} envelope and a bare {enabled}.
-  return { enabled: value.enabled === true || payload.enabled === true }
+  return {
+    enabled: value.enabled === true || payload.enabled === true,
+    advanced: value.advanced === true || payload.advanced === true,
+  }
 }
 
 /**
@@ -346,22 +356,23 @@ function createPlugin(React) {
    * A failed poll degrades to a readable error line instead of hiding the tab.
    */
   function CapabilityBar({ t, sessionId }) {
-    const [state, setState] = React.useState({ status: 'loading', enabled: false, error: '' })
+    const [state, setState] = React.useState({ status: 'loading', enabled: false, advanced: false, error: '' })
     const [busy, setBusy] = React.useState(false)
+    const [busyAdvanced, setBusyAdvanced] = React.useState(false)
     const alive = React.useRef(true)
     const load = React.useCallback(async () => {
       if (!sessionId) return
       try {
         const value = await capabilityRequest('GET', sessionId)
-        if (alive.current) setState({ status: 'ready', enabled: value.enabled, error: '' })
+        if (alive.current) setState({ status: 'ready', enabled: value.enabled, advanced: value.advanced, error: '' })
       } catch (error) {
-        if (alive.current) setState((current) => ({ status: 'error', enabled: current.enabled, error: messageOf(error) }))
+        if (alive.current) setState((current) => ({ status: 'error', enabled: current.enabled, advanced: current.advanced, error: messageOf(error) }))
       }
     }, [sessionId])
     React.useEffect(() => {
       alive.current = true
       if (!sessionId) {
-        setState({ status: 'error', enabled: false, error: t('capNoSession') })
+        setState({ status: 'error', enabled: false, advanced: false, error: t('capNoSession') })
         return () => {
           alive.current = false
         }
@@ -375,53 +386,77 @@ function createPlugin(React) {
       }
     }, [load, sessionId, t])
 
-    const toggle = async () => {
-      const next = !state.enabled
-      setBusy(true)
+    const save = async (patch, setSaving) => {
+      setSaving(true)
       setState((current) => ({ ...current, error: '' }))
       try {
-        const value = await capabilityRequest('POST', sessionId, next)
-        if (alive.current) setState({ status: 'ready', enabled: value.enabled, error: '' })
+        const value = await capabilityRequest('POST', sessionId, patch)
+        if (alive.current) setState({ status: 'ready', enabled: value.enabled, advanced: value.advanced, error: '' })
       } catch (error) {
         if (alive.current) {
           setState((current) => ({ ...current, status: 'error', error: t('capSaveFailed', { message: messageOf(error) }) }))
         }
       } finally {
-        if (alive.current) setBusy(false)
+        if (alive.current) setSaving(false)
       }
     }
+    const toggle = () => save({ enabled: !state.enabled }, setBusy)
+    const toggleAdvanced = () => save({ advanced: !state.advanced }, setBusyAdvanced)
 
     const enabled = state.enabled === true
+    const advanced = state.advanced === true
     const title = state.status === 'loading' ? t('capLoading') : enabled ? t('capOnTitle') : t('capOffTitle')
     const hint = enabled ? t('capOnHint') : t('capOffHint')
+    const advTitle = state.status === 'loading' ? t('capLoading') : advanced ? t('advOnTitle') : t('advOffTitle')
     return h(
       'div',
-      { className: 'cu-cap', 'data-enabled': enabled ? 'true' : 'false', 'data-status': state.status },
+      { className: 'cu-cap-stack' },
       h(
         'div',
-        { className: 'cu-cap-text' },
-        h('p', { className: 'cu-cap-title' }, title),
-        state.status === 'error' && state.error
-          ? h('p', { className: 'cu-cap-error', role: 'status' }, state.error)
-          : h('p', { className: 'cu-cap-hint' }, hint),
+        { className: 'cu-cap', 'data-enabled': enabled ? 'true' : 'false', 'data-status': state.status },
+        h(
+          'div',
+          { className: 'cu-cap-text' },
+          h('p', { className: 'cu-cap-title' }, title),
+          state.status === 'error' && state.error
+            ? h('p', { className: 'cu-cap-error', role: 'status' }, state.error)
+            : h('p', { className: 'cu-cap-hint' }, hint),
+        ),
+        h(
+          'div',
+          { className: 'cu-cap-switch' },
+          busy ? h('span', { className: 'cu-cap-saving' }, t('capSaving')) : null,
+          h(Switch, {
+            checked: enabled,
+            disabled: busy || !sessionId,
+            label: enabled ? t('capDisable') : t('capEnable'),
+            onToggle: () => void toggle(),
+          }),
+        ),
       ),
       h(
         'div',
-        { className: 'cu-cap-switch' },
-        busy ? h('span', { className: 'cu-cap-saving' }, t('capSaving')) : null,
-        h(Switch, {
-          checked: enabled,
-          disabled: busy || !sessionId,
-          label: enabled ? t('capDisable') : t('capEnable'),
-          onToggle: () => void toggle(),
-        }),
+        { className: 'cu-cap', 'data-enabled': advanced ? 'true' : 'false', 'data-status': state.status },
+        h(
+          'div',
+          { className: 'cu-cap-text' },
+          h('p', { className: 'cu-cap-title' }, advTitle),
+          h('p', { className: 'cu-cap-hint' }, t('advHint')),
+        ),
+        h(
+          'div',
+          { className: 'cu-cap-switch' },
+          busyAdvanced ? h('span', { className: 'cu-cap-saving' }, t('advSaving')) : null,
+          h(Switch, {
+            checked: advanced,
+            disabled: busyAdvanced || !sessionId || !enabled,
+            label: advanced ? t('advDisable') : t('advEnable'),
+            onToggle: () => void toggleAdvanced(),
+          }),
+        ),
       ),
     )
   }
-
-  // -------------------------------------------------------------------------
-  // Tool cards (migrated from @local/dsh-session-capabilities)
-  // -------------------------------------------------------------------------
 
   function ScreenshotToolView({ t, phase, block }) {
     const [expanded, setExpanded] = React.useState(false)
@@ -1034,6 +1069,7 @@ function createPlugin(React) {
 .msm-cu-status-item{display:inline-flex;align-items:center;gap:5px;white-space:nowrap}
 .msm-cu-status-dot{width:7px;height:7px;border-radius:999px;flex:none;background:var(--dsw-alias-state-success-primary)}
 .msm-cu-status-dot[data-paused="true"]{background:var(--dsw-alias-state-warn-primary)}
+.cu-cap-stack{display:flex;flex-direction:column;gap:8px}
 .cu-cap{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 14px;border:1px solid var(--dsw-alias-border-l1);border-radius:12px;background:var(--dsw-alias-bg-layer-1)}
 .cu-cap[data-enabled="true"]{border-color:color-mix(in srgb,var(--dsw-alias-state-success-primary) 45%,transparent);background:color-mix(in srgb,var(--dsw-alias-state-success-primary) 8%,transparent)}
 .cu-cap-text{display:flex;flex-direction:column;gap:2px;min-width:0;flex:1}

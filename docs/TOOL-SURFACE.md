@@ -1,7 +1,8 @@
 # Tool surface: two switches for one capability
 
-Status: **proposal** (2026-11-21). The plugin currently registers both tools under the single
-`computerUse` switch.
+Status: **implemented (unreleased)** — 2026-11-21. The default surface is one `computer` tool with
+`action:"screenshot"`; the standalone `computer_screenshot` tool is registered only when
+`computerUseAdvanced` is on.
 
 ## The problem
 

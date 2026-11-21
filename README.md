@@ -187,6 +187,11 @@ If the DSH session approval policy is `never`, such an action is auto-rejected w
 
 ## Tools
 
+**Default surface: one tool.** `computer({action:"screenshot", ...})` is part of the `computer`
+tool, so a session normally sees a single capability. The standalone `computer_screenshot` tool is
+only registered when the per-conversation *advanced tool surface* switch is on (scripts and
+compatibility). Both are documented below.
+
 ### `computer_screenshot`
 
 | Parameter | Type | Meaning |

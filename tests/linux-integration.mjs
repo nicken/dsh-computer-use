@@ -109,7 +109,7 @@ function createFakeContext() {
 const { ctx, tools, routes, disposers } = createFakeContext()
 plugin.apply(ctx)
 
-check('screenshot tool is registered', tools.has('computer_screenshot'))
+check('advanced screenshot tool is registered', tools.has('computer_screenshot'))
 check('computer tool is registered', tools.has('computer'))
 check('status route is registered', routes.some((route) => route.path === '/api/computer-use/status'))
 check('shot route is registered', routes.some((route) => route.path === '/api/computer-use/shot'))
@@ -197,7 +197,7 @@ function liveInterference(result) {
 async function moveToLocal(x, y, attempts = 3) {
   let last = null
   for (let attempt = 0; attempt < attempts; attempt += 1) {
-    const shot = await call('computer_screenshot', {})
+    const shot = await call('computer', { action: 'screenshot' })
     last = await call('computer', { action: 'move', x, y, state_id: shot.state_id })
     if (last.ok === true || !liveInterference(last)) return last
     await sleep(200)

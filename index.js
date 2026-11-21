@@ -130,7 +130,7 @@ let competingProviderCache = { at: 0, context: null, rows: [] }
 
 const INPUT_ACTIONS = ['move', 'click', 'double_click', 'right_click', 'drag', 'scroll', 'type', 'key']
 const ACTIVATING_ACTIONS = ['click', 'double_click', 'right_click', 'drag', 'type', 'key']
-const ALL_ACTIONS = [...INPUT_ACTIONS, 'wait', 'sequence', 'inputcheck', 'pause']
+const ALL_ACTIONS = [...INPUT_ACTIONS, 'wait', 'sequence', 'inputcheck', 'pause', 'screenshot']
 
 const DEFAULT_RISK_INTENT =
   /\b(send|submit|delete|remove|purchase|buy|pay|payment|transfer|confirm|password|credential|format|wipe|shutdown|uninstall|install|overwrite|approve)\b|发送|提交|删除|移除|购买|支付|付款|转账|确认|密码|卸载|安装|格式化|关机|注销/i
@@ -276,9 +276,34 @@ function setComputerUseForSession(sessionId, enabled) {
   return record.computerUse
 }
 
+function computerUseAdvancedForSession(sessionId) {
+  if (!sessionId) return false
+  const store = readCapabilityStore()
+  const record = store.sessions[sessionId]
+  return record !== undefined && typeof record === 'object' && record.computerUseAdvanced === true
+}
+
+function setComputerUseAdvancedForSession(sessionId, enabled) {
+  const store = readCapabilityStore()
+  const existing = store.sessions[sessionId]
+  const record = existing !== undefined && typeof existing === 'object' && !Array.isArray(existing) ? { ...existing } : {}
+  record.computerUseAdvanced = enabled === true
+  store.sessions[sessionId] = record
+  writeCapabilityStoreAtomic(store)
+  return record.computerUseAdvanced
+}
+
 function computerUseEnabled(agent) {
   try {
     return computerUseEnabledForSession(sessionIdOf(agent))
+  } catch {
+    return false
+  }
+}
+
+function computerUseAdvanced(agent) {
+  try {
+    return computerUseAdvancedForSession(sessionIdOf(agent))
   } catch {
     return false
   }
@@ -1313,7 +1338,11 @@ async function serveStatus(request) {
  * agent's next step without restarting anything.
  */
 function capabilityValue(sessionId) {
-  return { sessionId, enabled: computerUseEnabledForSession(sessionId) }
+  return {
+    sessionId,
+    enabled: computerUseEnabledForSession(sessionId),
+    advanced: computerUseAdvancedForSession(sessionId),
+  }
 }
 
 function validSessionId(value) {
@@ -1341,9 +1370,12 @@ async function serveCapability(request) {
     if (!body || typeof body !== 'object' || Array.isArray(body)) return errorResponse('a JSON body is required')
     if (!sessionId) sessionId = validSessionId(body.sessionId)
     if (!sessionId) return errorResponse('sessionId is required')
-    if (typeof body.enabled !== 'boolean') return errorResponse('enabled must be a boolean')
-    const enabled = setComputerUseForSession(sessionId, body.enabled)
-    return capabilityResponse({ sessionId, enabled })
+    const wantsEnabled = typeof body.enabled === 'boolean'
+    const wantsAdvanced = typeof body.advanced === 'boolean'
+    if (!wantsEnabled && !wantsAdvanced) return errorResponse('enabled or advanced must be a boolean')
+    if (wantsEnabled) setComputerUseForSession(sessionId, body.enabled)
+    if (wantsAdvanced) setComputerUseAdvancedForSession(sessionId, body.advanced)
+    return capabilityResponse(capabilityValue(sessionId))
   } catch (error) {
     return errorResponse(messageOf(error), 500)
   }
@@ -1515,7 +1547,7 @@ async function captureForAgent(exec, args) {
 const computerTool = {
   name: 'computer',
   description:
-    `Drive the real ${DESKTOP_LABEL} desktop with one action per call. Actions: move, click, double_click, right_click, drag, scroll, type, key, wait, sequence, inputcheck, pause. ` +
+    `Drive the real ${DESKTOP_LABEL} desktop with one action per call. Actions: screenshot, move, click, double_click, right_click, drag, scroll, type, key, wait, sequence, inputcheck, pause. ` +
     (LINUX
       ? 'All coordinates are LOCAL to the monitor of the state_id observation; a screenshot of another monitor must be taken before acting there. '
       : 'Windows action coordinates are desktop-global: a monitor screenshot reports originX/originY, so add them to a position measured on the image. ') +
@@ -1552,6 +1584,26 @@ const computerTool = {
       confirm_risk: {
         type: 'boolean',
         description: 'Set to true to accept that a high-risk action goes through user approval; without it a high-risk action is refused before anything happens.',
+      },
+      screen: {
+        type: 'string',
+        description: 'screenshot: monitor selector. Omit for the primary monitor; "cursor" follows the pointer; otherwise a monitor id or index.',
+      },
+      region: {
+        type: 'object',
+        additionalProperties: false,
+        description: 'screenshot: optional monitor-local crop {x,y,width,height} (Linux/X11).',
+        properties: {
+          x: { type: 'integer' },
+          y: { type: 'integer' },
+          width: { type: 'integer' },
+          height: { type: 'integer' },
+        },
+        required: ['x', 'y', 'width', 'height'],
+      },
+      scale: {
+        type: 'number',
+        description: 'screenshot: optional scale factor for a region crop (for example 0.5).',
       },
       x: { type: 'integer', description: 'Target X for move, click, double_click, right_click, drag start, or scroll anchor.' },
       y: { type: 'integer', description: 'Target Y for move, click, double_click, right_click, drag start, or scroll anchor.' },
@@ -1906,6 +1958,17 @@ async function performComputer(ctx, exec, args) {
     )
     appendAudit(exec, action || 'unknown', args, result, null)
     return result
+  }
+  if (action === 'screenshot') {
+    try {
+      const value = await captureForAgent(exec, args)
+      appendAudit(exec, 'screenshot', args, value, null)
+      return value
+    } catch (error) {
+      const result = refusal('screenshot', 'capture_failed', `The screenshot failed: ${messageOf(error).slice(0, 300)}`, 'Retry once; if it keeps failing, run computer { action: "inputcheck" }.')
+      appendAudit(exec, 'screenshot', args, result, null)
+      return result
+    }
   }
   let risk = null
   let observation = null
@@ -2530,8 +2593,11 @@ export function apply(ctx) {
     // Opt-in per conversation: the tools exist only while the user (or an
     // approved capability request) enabled computer use for this Session.
     const when = ({ agent }) => computerUseEnabled(agent)
+    // The screenshot tool is folded into `computer({action:"screenshot"})` by
+    // default; the separate tool only exists for the advanced surface.
+    const whenAdvanced = ({ agent }) => computerUseEnabled(agent) && computerUseAdvanced(agent)
     const disposers = [
-      ctx.tools.register(screenshotTool, { when }),
+      ctx.tools.register(screenshotTool, { when: whenAdvanced }),
       ctx.tools.register(computerTool, { when }),
     ]
     return () => {

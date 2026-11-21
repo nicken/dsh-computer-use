@@ -1,5 +1,13 @@
 # CHANGELOG — dsh-computer-use
 
+## Unreleased (this branch)
+
+- **Single tool surface by default.** The default capability registers one `computer` tool;
+  `computer({action:"screenshot"})` replaces the usual first call. The standalone
+  `computer_screenshot` tool is registered only when `computerUseAdvanced` is on. The Desktop tab
+  exposes both switches.
+- Integration test now exercises `computer({action:"screenshot"})`.
+
 本文件记录 Linux/X11 接线以来的版本变更。基线 1.0.1 是安装包里原有的 Windows 原生实现。
 
 ## 1.6.0 — 2026-11-16

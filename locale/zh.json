@@ -1,0 +1,23 @@
+{
+  "meta": {
+    "title": "桌面电脑操作",
+    "description": "通过 computer-use 能力向智能体提供桌面截图与真实的鼠标/键盘控制（Windows 原生 / Linux X11）。"
+  },
+  "client": {
+    "_note": "Web「桌面」视图的文案镜像；client.js 的 zh/en 字典是权威副本，两者需同步。",
+    "desktopView": "桌面",
+    "desktopTraceTitle": "桌面操作回溯",
+    "desktopTraceHint": "本会话中 computer_screenshot 与 computer 的执行记录，按轮次分组，可独立查看。",
+    "capOffTitle": "本会话未开启电脑操作",
+    "capOffHint": "开启后智能体在下一步即可使用桌面截图与鼠标/键盘工具；默认关闭，且只对当前会话生效。",
+    "capOnTitle": "本会话已开启电脑操作",
+    "capOnHint": "桌面截图与鼠标/键盘工具在本会话可用；关闭后立即从工具列表移除。",
+    "capEnable": "开启电脑操作",
+    "capDisable": "关闭电脑操作",
+    "capLoading": "正在读取电脑操作开关…",
+    "capSaving": "正在保存…",
+    "capLoadFailed": "无法读取电脑操作开关：{message}",
+    "capSaveFailed": "保存电脑操作开关失败：{message}",
+    "capNoSession": "缺少会话 id，无法读写电脑操作开关。"
+  }
+}

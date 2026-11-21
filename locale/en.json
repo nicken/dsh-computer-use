@@ -1,0 +1,23 @@
+{
+  "meta": {
+    "title": "Desktop Computer Use",
+    "description": "Gives agents a desktop screenshot tool and real mouse/keyboard control on Windows and Linux/X11 through the computer-use capability."
+  },
+  "client": {
+    "_note": "Mirror of the Web 「Desktop」 view strings; the zh/en dictionaries in client.js are authoritative, keep both in sync.",
+    "desktopView": "Desktop",
+    "desktopTraceTitle": "Desktop activity",
+    "desktopTraceHint": "computer_screenshot and computer calls from this session, grouped by round and reviewable on their own.",
+    "capOffTitle": "Computer use is off for this conversation",
+    "capOffHint": "Turn it on so the agent can use the desktop screenshot and mouse/keyboard tools from its next step. Off by default, and scoped to this conversation.",
+    "capOnTitle": "Computer use is on for this conversation",
+    "capOnHint": "Desktop screenshot and mouse/keyboard tools are available here. Turning it off removes them immediately.",
+    "capEnable": "Enable computer use",
+    "capDisable": "Disable computer use",
+    "capLoading": "Reading the computer-use switch…",
+    "capSaving": "Saving…",
+    "capLoadFailed": "Cannot read the computer-use switch: {message}",
+    "capSaveFailed": "Cannot save the computer-use switch: {message}",
+    "capNoSession": "No session id, so the computer-use switch cannot be read or written."
+  }
+}

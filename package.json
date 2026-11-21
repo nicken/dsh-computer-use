@@ -1,0 +1,46 @@
+{
+  "name": "@local/dsh-computer-use",
+  "version": "1.6.0",
+  "private": true,
+  "type": "module",
+  "description": "Desktop screenshots and real mouse/keyboard input for agents. Windows native (PowerShell + SendInput) and Linux/X11 (xdotool/scrot); selected at runtime by backends/index.mjs.",
+  "exports": {
+    ".": "./index.js",
+    "./client": "./client.web.js",
+    "./locale/*.json": "./locale/*.json",
+    "./icon": "./icon.svg"
+  },
+  "files": [
+    "index.js",
+    "client.js",
+    "client.web.js",
+    "scripts/build-client.mjs",
+    "backends",
+    "cordis.patch.yml",
+    "locale/*.json",
+    "icon.svg",
+    "README-DEV.md",
+    "tests",
+    "CHANGELOG.md",
+    "docs"
+  ],
+  "scripts": {
+    "build:client": "node scripts/build-client.mjs",
+    "prepack": "node scripts/build-client.mjs",
+    "test": "node tests/adapter-selftest.mjs && node backends/selftest.mjs",
+    "test:e2e": "node tests/linux-integration.mjs",
+    "test:smoke": "node backends/smoke-linux.mjs"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    },
+    "client": {
+      "platform": "web",
+      "immediately": true,
+      "inject": [
+        "@deepseek-ai/dsh-client-locale"
+      ]
+    }
+  }
+}

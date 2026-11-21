@@ -36,6 +36,14 @@ Linux/X11 and Windows are supported. **Wayland and macOS are not.** See [docs/PL
 
 ---
 
+## Screenshots
+
+![Desktop operation replay](docs/assets/desktop-replay.png)
+
+The Desktop tab groups screenshots and input actions by round, enlarges the captures, and boxes the
+click position on the screenshot the action was taken against — so a session can be reviewed after
+the fact. The image above is a real run on this repository (English UI labels are localized).
+
 ## What it is
 
 `dsh-computer-use` is a plugin for DeepSeek Harness (DSH) that registers two model-facing tools:

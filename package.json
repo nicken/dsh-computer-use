@@ -26,7 +26,8 @@
     "CONTRIBUTING.md",
     "tests",
     "CHANGELOG.md",
-    "docs"
+    "docs",
+    "SECURITY.md"
   ],
   "scripts": {
     "build:client": "node scripts/build-client.mjs",

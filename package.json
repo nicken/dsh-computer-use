@@ -32,7 +32,7 @@
   "scripts": {
     "build:client": "node scripts/build-client.mjs",
     "prepack": "node scripts/build-client.mjs",
-    "test": "node tests/adapter-selftest.mjs && node backends/selftest.mjs && node tests/windows-mode-selftest.mjs",
+    "test": "node tests/adapter-selftest.mjs && node backends/selftest.mjs && node tests/windows-mode-selftest.mjs && node tests/capability-unit.mjs",
     "test:e2e": "node tests/linux-integration.mjs",
     "test:smoke": "node backends/smoke-linux.mjs"
   },

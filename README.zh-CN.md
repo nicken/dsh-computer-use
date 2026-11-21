@@ -42,7 +42,7 @@
 
 | 工具 | 作用 |
 |---|---|
-| `computer_screenshot` | 截取**一块显示器**为 PNG，返回路径、几何、光标、前台窗口、显示器清单，以及新的一次性观察令牌（`state_id`）。 |
+| `computer_screenshot` | 截取**一块显示器**为 PNG，返回路径、几何、光标、前台窗口、显示器清单，以及新的一次性观察令牌（`state_id`）。默认工具面里这是 `computer({action:"screenshot"})`；独立工具仅在高级开关下注册。 |
 | `computer` | 在该令牌之下对桌面执行**一个真实输入动作**（或一小批）：move、click、double_click、right_click、drag、scroll、type、key；另有流程动作 `wait`、`sequence`、`inputcheck`、`pause`。 |
 
 桌面原语按平台原生实现；工具契约、令牌生命周期、风险策略、审计与暂停是平台无关的，位于 [`index.js`](index.js)。平台选择在运行时由 [`backends/index.mjs`](backends/index.mjs) 完成。
@@ -148,7 +148,7 @@ Web UI——输入仍然发生在运行 agent 的那台机器上。
 
 ```jsonc
 // 1. 观察一块显示器（省略 "screen" = 主屏/最大屏）
-{ "tool": "computer_screenshot", "arguments": { "screen": "auto" } }
+{ "tool": "computer", "arguments": { "action": "screenshot", "screen": "auto" } }
 // → path、width、height、originX、originY、cursor、foreground、
 //   state_id、screen、screens
 ```

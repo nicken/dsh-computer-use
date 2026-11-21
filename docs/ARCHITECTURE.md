@@ -252,7 +252,7 @@ The store is `~/.dsh/capability-toggles.json`:
 { "version": 1, "sessions": { "<sessionId>": { "computerUse": true } } }
 ```
 
-The store is shared with the MCP/skill manager, so this plugin only ever touches `sessions.<id>.computerUse`, preserves every other key/session/flag, writes atomically (tmp + rename) and treats an unreadable or unknown record as **off**. Computer use is opt-in.
+The store is shared with the MCP/skill manager, so this plugin only ever touches `sessions.<id>.computerUse` and `sessions.<id>.computerUseAdvanced`, preserves every other key/session/flag, writes atomically (tmp + rename) and treats an unreadable or unknown record as **off**. Computer use is opt-in.
 
 ## Concurrency and ordering
 

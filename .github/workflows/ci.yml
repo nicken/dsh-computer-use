@@ -45,6 +45,11 @@ jobs:
             openbox python3-gi gir1.2-gtk-3.0 python3-xlib
 
       # No `npm install`: the plugin and all tests are dependency-free.
+      - name: Client bundle is up to date
+        run: |
+          node scripts/build-client.mjs
+          git diff --exit-code -- client.web.js
+
       - name: Offline tests (adapter validation)
         run: node tests/adapter-selftest.mjs
 
@@ -53,6 +58,9 @@ jobs:
 
       - name: Static Windows-mode tests
         run: node tests/windows-mode-selftest.mjs
+
+      - name: Capability switch tests
+        run: node tests/capability-unit.mjs
 
       # The integration suite requires an X server *and* a foreground window
       # (_NET_ACTIVE_WINDOW). A bare Xvfb has neither a window manager nor any
@@ -101,3 +109,6 @@ jobs:
 
       - name: Static Windows-mode tests
         run: node tests/windows-mode-selftest.mjs
+
+      - name: Capability switch tests
+        run: node tests/capability-unit.mjs

@@ -42,7 +42,7 @@ Linux/X11 and Windows are supported. **Wayland and macOS are not.** See [docs/PL
 
 | Tool | What it does |
 |---|---|
-| `computer_screenshot` | Captures **one monitor** to a PNG and returns the path, geometry, cursor, foreground window, the monitor list and a fresh single-use observation token (`state_id`). |
+| `computer_screenshot` | Captures **one monitor** to a PNG and returns the path, geometry, cursor, foreground window, the monitor list and a fresh single-use observation token (`state_id`). In the default surface this action is `computer({action:"screenshot"})`; the standalone tool is advanced-only. |
 | `computer` | Performs **one real input action** (or a short batch) on the desktop behind that token: move, click, double-click, right-click, drag, scroll, type, key — plus the flow actions `wait`, `sequence`, `inputcheck` and `pause`. |
 
 The desktop primitives are native per platform; the tool contract, token lifecycle, risk policy, audit and pause are platform-agnostic and live in [`index.js`](index.js). The backend split is selected at runtime by [`backends/index.mjs`](backends/index.mjs).
@@ -151,7 +151,7 @@ A typical agent loop (Linux/X11 semantics; see [Coordinates](#coordinates)):
 
 ```jsonc
 // 1. Observe one monitor (omitting "screen" = primary / largest monitor)
-{ "tool": "computer_screenshot", "arguments": { "screen": "auto" } }
+{ "tool": "computer", "arguments": { "action": "screenshot", "screen": "auto" } }
 // → path, width, height, originX, originY, cursor, foreground,
 //   state_id, screen, screens
 ```

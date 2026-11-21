@@ -80,7 +80,7 @@
 
 ## 环境要求
 
-- **DSH**：使用支持插件的 profile（安装示例用 `web`），以及用于「桌面」视图的浏览器。
+- **DSH**：使用支持插件的 profile（实测 `0.2.2-rc.5`，安装示例用 `web`），以及用于「桌面」视图的浏览器。
 - **Node.js ≥ 22**（`package.json` 声明；插件只用 ESM 与 Node 内置模块）。
 - **Linux**：X11 会话（`DISPLAY` 已设置，`XDG_SESSION_TYPE` 不是 `wayland`）。
   - 必需工具：`xdotool`、`xprop`、`xwininfo`、`xrandr`。
@@ -92,6 +92,13 @@
     # 可选但推荐：
     sudo apt install python3-gi gir1.2-gtk-3.0 python3-xlib
     ```
+- **最小安装（除此之外不需要再装任何东西；使用方无需 `npm install`，也没有构建步骤）：**
+
+  | 平台 | 必须安装 | 可选/推荐 |
+  |---|---|---|
+  | Linux X11 | `xdotool x11-utils x11-xserver-utils scrot` | `python3-xlib`（全局急停热键）、`python3-gi gir1.2-gtk-3.0`（剪贴板输入 Unicode） |
+  | Windows 10/11 | 无（自带 Windows PowerShell 5.1） | — |
+
 - **Windows**：Windows 10/11，带 Windows PowerShell 5.1（默认的 `powershell.exe`）。不需要 npm 包，插件本身也不需要管理员权限；helper 文件暂存在 `%LOCALAPPDATA%\dsh-computer-use\helper`。Windows UIPI 仍会阻止 `SendInput` 注入到更高完整性级别的窗口，因此请让 DSH 与目标应用运行在同一权限级别。
 
 > **Windows 状态：** Windows 后端已实现，并有静态/纯函数测试覆盖，但本仓库尚未在真实 Windows 桌面上做端到端验证。请先运行 `computer { "action": "inputcheck" }` 和一次截图确认。详见 [docs/PLATFORMS.md](docs/PLATFORMS.md)。
@@ -342,6 +349,7 @@ PNG **不会自动附加到对话**。智能体必须用图像读取工具打开
 | [docs/SECURITY.md](docs/SECURITY.md) | 威胁模型、默认边界、审批策略、部署建议、漏洞报告。 |
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | 本地 profile link、目录结构、客户端构建、代码风格、发布流程。 |
 | [docs/TESTING.md](docs/TESTING.md) | 三层测试、命令、CI 矩阵与本地复现。 |
+| [docs/TOOL-SURFACE.md](docs/TOOL-SURFACE.md) | 把 2 个工具合并为 1 个 `computer` facade + 可选「高级」开关的提案。 |
 | [docs/demo-2026-11-10-baidu-news.md](docs/demo-2026-11-10-baidu-news.md) | 一次 Linux/X11 真机会话记录，作为回归对照。 |
 | [backends/CONTRACT.md](backends/CONTRACT.md) | 后端契约、坐标规则与不变量（中文）。 |
 | [CHANGELOG.md](CHANGELOG.md) | 版本变更。 |

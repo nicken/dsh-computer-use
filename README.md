@@ -80,7 +80,7 @@ This repository does **not** use or bundle pyautogui, Playwright, Selenium or Pu
 
 ## Requirements
 
-- **DSH** with a profile that supports plugins (the install example uses the `web` profile) and a browser for the Desktop view.
+- **DSH** with a profile that supports plugins (tested with `0.2.2-rc.5`; the install example uses the `web` profile) and a browser for the Desktop view.
 - **Node.js ≥ 22** (declared in `package.json`; the plugin uses ESM and Node built-ins only).
 - **Linux**: an X11 session (`DISPLAY` set, `XDG_SESSION_TYPE` not `wayland`).
   - Required tools: `xdotool`, `xprop`, `xwininfo`, `xrandr`.
@@ -92,6 +92,13 @@ This repository does **not** use or bundle pyautogui, Playwright, Selenium or Pu
     # optional but recommended:
     sudo apt install python3-gi gir1.2-gtk-3.0 python3-xlib
     ```
+- **Minimum install (nothing else is needed; there is no `npm install` for consumers and no build step):**
+
+  | Platform | Must install | Optional / recommended |
+  |---|---|---|
+  | Linux X11 | `xdotool x11-utils x11-xserver-utils scrot` | `python3-xlib` (global emergency hotkey), `python3-gi gir1.2-gtk-3.0` (Unicode typing via clipboard) |
+  | Windows 10/11 | nothing (Windows PowerShell 5.1 is built in) | — |
+
 - **Windows**: Windows 10/11 with Windows PowerShell 5.1 (the default `powershell.exe`). No npm packages are required and the plugin itself does not need admin rights; helper files are staged under `%LOCALAPPDATA%\dsh-computer-use\helper`. Windows UIPI still blocks `SendInput` into windows at a higher integrity level, so run DSH and the target applications at the same elevation.
 
 > **Windows status:** the Windows backend is implemented and covered by static/pure-function tests, but this repository has not validated it end-to-end on a real Windows desktop. Run `computer { "action": "inputcheck" }` and one screenshot first. See [docs/PLATFORMS.md](docs/PLATFORMS.md).
@@ -344,6 +351,7 @@ See [docs/SECURITY.md](docs/SECURITY.md) for the threat model and deployment rec
 | [docs/SECURITY.md](docs/SECURITY.md) | Threat model, default boundaries, approval policy, deployment guidance, reporting. |
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Local profile link setup, repository layout, client build, code style, release process. |
 | [docs/TESTING.md](docs/TESTING.md) | Three test layers, commands, CI matrix and local reproduction. |
+| [docs/TOOL-SURFACE.md](docs/TOOL-SURFACE.md) | Proposal to collapse the two tools into one `computer` facade with an opt-in advanced switch. |
 | [docs/demo-2026-11-10-baidu-news.md](docs/demo-2026-11-10-baidu-news.md) | A real-machine end-to-end session (Linux/X11) used as a regression reference. |
 | [backends/CONTRACT.md](backends/CONTRACT.md) | Backend contract, coordinate rules and invariants (Chinese). |
 | [CHANGELOG.md](CHANGELOG.md) | Version history. |

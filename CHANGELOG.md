@@ -1,4 +1,4 @@
-# CHANGELOG — @local/dsh-computer-use
+# CHANGELOG — dsh-computer-use
 
 本文件记录 Linux/X11 接线以来的版本变更。基线 1.0.1 是安装包里原有的 Windows 原生实现。
 

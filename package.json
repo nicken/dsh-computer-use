@@ -19,7 +19,11 @@
     "cordis.patch.yml",
     "locale/*.json",
     "icon.svg",
+    "README.md",
+    "README.zh-CN.md",
     "README-DEV.md",
+    "CREDITS.md",
+    "CONTRIBUTING.md",
     "tests",
     "CHANGELOG.md",
     "docs"
@@ -27,7 +31,7 @@
   "scripts": {
     "build:client": "node scripts/build-client.mjs",
     "prepack": "node scripts/build-client.mjs",
-    "test": "node tests/adapter-selftest.mjs && node backends/selftest.mjs",
+    "test": "node tests/adapter-selftest.mjs && node backends/selftest.mjs && node tests/windows-mode-selftest.mjs",
     "test:e2e": "node tests/linux-integration.mjs",
     "test:smoke": "node backends/smoke-linux.mjs"
   },

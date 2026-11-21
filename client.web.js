@@ -5,10 +5,10 @@
  * factory (id = package name) and materializes the plugin face on first import.
  */
 window.__ModuleLoader__.load({
-  id: "@local/dsh-computer-use",
+  id: "dsh-computer-use",
   factory(require) {
     /**
-     * @local/dsh-computer-use — Web client half (ESM authoring source).
+     * dsh-computer-use — Web client half (ESM authoring source).
      *
      * Contributes three things to the Web shell:
      *   1. a Conversation view tab (`conversation.view` id `computer-use`, order 20)
@@ -1064,8 +1064,8 @@ window.__ModuleLoader__.load({
           ctx.effect(() => ctx.locale.register(NS, { zh, en }), 'computer-use: dictionaries')
           ctx.effect(() => {
             const tag = document.createElement('style')
-            tag.dataset.plugin = '@local/dsh-computer-use'
-            tag.dataset.pluginCss = '@local/dsh-computer-use/client.css'
+            tag.dataset.plugin = 'dsh-computer-use'
+            tag.dataset.pluginCss = 'dsh-computer-use/client.css'
             tag.textContent = CSS
             document.head.appendChild(tag)
             return () => tag.remove()
@@ -1111,7 +1111,7 @@ window.__ModuleLoader__.load({
       inject: ['slots', 'locale'],
       apply(ctx) {
         if (ReactImpl === null) {
-          throw new Error('@local/dsh-computer-use: React was not provided; load the generated client.web.js bundle, not client.js directly')
+          throw new Error('dsh-computer-use: React was not provided; load the generated client.web.js bundle, not client.js directly')
         }
         return createPlugin(ReactImpl).apply(ctx)
       },

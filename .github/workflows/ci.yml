@@ -1,0 +1,103 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+# Read-only token: this workflow only checks out code and runs tests.
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  linux:
+    name: Linux X11 (Node ${{ matrix.node }})
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [22, 24]
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      # xvfb: headless X server
+      # xdotool: XTest input; scrot: screenshot; x11-utils: xprop/xwininfo/xmessage;
+      # x11-xserver-utils: xrandr; openbox: window manager so _NET_ACTIVE_WINDOW exists;
+      # python3-gi + gir1.2-gtk-3.0: clipboard helper used by `type`;
+      # python3-xlib: the emergency-hotkey watcher.
+      - name: Install X11 test dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends \
+            xvfb xdotool scrot x11-utils x11-xserver-utils \
+            openbox python3-gi gir1.2-gtk-3.0 python3-xlib
+
+      # No `npm install`: the plugin and all tests are dependency-free.
+      - name: Offline tests (adapter validation)
+        run: node tests/adapter-selftest.mjs
+
+      - name: Offline tests (X11 primitives)
+        run: node backends/selftest.mjs
+
+      - name: Static Windows-mode tests
+        run: node tests/windows-mode-selftest.mjs
+
+      # The integration suite requires an X server *and* a foreground window
+      # (_NET_ACTIVE_WINDOW). A bare Xvfb has neither a window manager nor any
+      # client window, so start openbox and a stable xmessage target first, then
+      # run the same command a developer runs locally.
+      - name: X11 integration test under Xvfb
+        run: |
+          xvfb-run -a -s "-screen 0 1280x1024x24" bash -c '
+            set -eu
+            export XDG_SESSION_TYPE=x11
+            openbox >/dev/null 2>&1 &
+            sleep 1
+            xmessage -geometry 900x700+0+0 -title "dsh-computer-use CI target" \
+              "dsh-computer-use CI target" >/dev/null 2>&1 &
+            for attempt in $(seq 1 20); do
+              xprop -root _NET_ACTIVE_WINDOW 2>/dev/null | grep -qE "window id # 0x[1-9a-fA-F]" && break
+              sleep 0.5
+            done
+            if ! xprop -root _NET_ACTIVE_WINDOW 2>/dev/null | grep -qE "window id # 0x[1-9a-fA-F]"; then
+              echo "Xvfb has no foreground window; the integration test would fail closed with foreground_unreadable."
+              exit 1
+            fi
+            node tests/linux-integration.mjs
+          '
+
+  windows:
+    name: Windows (Node 22)
+    runs-on: windows-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      # No PowerShell dispatch is attempted on CI: these are the pure/static
+      # suites that run on any OS.
+      - name: Offline tests (adapter validation)
+        run: node tests/adapter-selftest.mjs
+
+      - name: Offline tests (X11 primitives)
+        run: node backends/selftest.mjs
+
+      - name: Static Windows-mode tests
+        run: node tests/windows-mode-selftest.mjs

@@ -120,7 +120,7 @@ const HOTKEY_CANDIDATES = [
 // computer-use plugin per process can own it. Our tools do not depend on it, so a
 // conflict is reported instead of failing the plugin.
 const PROVIDER_SLOT = 'computerUse'
-const SELF_MODULE_NAME = '@local/dsh-computer-use'
+const SELF_MODULE_NAME = 'dsh-computer-use'
 const COMPETING_PROVIDER_RE = /computer[-_. ]?use|computer[-_. ]?control|windows[-_. ]?mcp|desktop[-_. ]?control/i
 /** 'waiting' until the seam resolves, then 'registered' or 'conflict'. */
 let providerSlotState = { status: 'waiting', error: '' }

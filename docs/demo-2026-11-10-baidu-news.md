@@ -85,7 +85,7 @@
    测试补输出 schema 校验。
 5. **区域截图缺失**：全屏 2560×1440 上下文太重。修复：`region`/`scale`（1.3.0）。
 
-## 5. 证据文件（本机）
+## 5. 证据文件（本地运行）
 
 - 截图：`~/.dsh/computer-use/shots/`（最近 60 张，含本记录时间段的全部观察）
 - 审计：`~/.dsh/computer-use/audit.jsonl`
@@ -98,8 +98,7 @@
 ## 6. 复现方式
 
 ```bash
-# 端到端（不触碰真实桌面之外的配置；默认只截图+移动指针）
-cd /home/nicken/Documents/deepseek-harness/default-workspace/projects/dsh-computer-use
+# 在仓库根目录运行端到端测试（不触碰真实桌面之外的配置；默认只截图+移动指针）
 node tests/linux-integration.mjs
 
 # 在 DSH 会话里真实复现（需要能力开启）：

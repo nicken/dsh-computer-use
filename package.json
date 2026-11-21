@@ -1,7 +1,7 @@
 {
-  "name": "@local/dsh-computer-use",
+  "name": "dsh-computer-use",
   "version": "1.6.0",
-  "private": true,
+  "private": false,
   "type": "module",
   "description": "Desktop screenshots and real mouse/keyboard input for agents. Windows native (PowerShell + SendInput) and Linux/X11 (xdotool/scrot); selected at runtime by backends/index.mjs.",
   "exports": {
@@ -42,5 +42,29 @@
         "@deepseek-ai/dsh-client-locale"
       ]
     }
+  },
+  "license": "MIT",
+  "author": "linzhicong",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nicken/dsh-computer-use.git"
+  },
+  "homepage": "https://github.com/nicken/dsh-computer-use#readme",
+  "bugs": {
+    "url": "https://github.com/nicken/dsh-computer-use/issues"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "computer-use",
+    "desktop-automation",
+    "x11",
+    "xdotool",
+    "windows",
+    "agent"
+  ],
+  "engines": {
+    "node": ">=22"
   }
 }

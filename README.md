@@ -115,6 +115,24 @@ Then restart the DSH Web app if the plugin does not appear (profile plugins are 
 
 The plugin's `dsh` metadata (`bundle.patch` → `cordis.patch.yml`) inserts the `computer-use` entry into the profile composition, and `package.json` contributes the Web client (`platform: web`, immediate, with the locale injection). For a local development checkout, see [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
 
+## Scope: the Harness host machine only
+
+The plugin injects real input into the **operating-system session that runs the DSH host**
+(`dsh web` / the DSH process). It is not a remote-desktop or browser-based remote-control
+protocol:
+
+- If you open the DSH Web UI from another computer, the agent still drives the **host machine's**
+  desktop, never the computer you are browsing from.
+- If DSH runs on a server, VM, container or WSL without an interactive desktop session, there is
+  nothing to drive (Linux needs an X11 `DISPLAY`; Windows needs an unlocked interactive session).
+  Wayland, headless containers and macOS are not supported.
+- The DSH page itself is user-only: the plugin refuses to drive the DSH UI, so the agent cannot
+  click its own control panel.
+
+To control a different machine, install and run the DSH host on that machine (a dedicated VM is
+recommended), then connect to its Web UI from wherever you like — the input still happens on the
+machine that hosts the agent.
+
 ## Enabling per conversation
 
 Computer use is **off by default and opt-in per conversation**:

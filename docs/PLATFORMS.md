@@ -1,5 +1,11 @@
 # Platforms
 
+> **The plugin only drives the machine that runs DSH.** Input is injected into the local
+> OS session of the DSH host process. Opening the DSH Web UI from another computer does not grant
+> control of that computer; install DSH on the machine you want to drive (a dedicated VM is
+> recommended). Headless servers, Wayland, WSL without X11 and macOS are not supported targets.
+
+
 `dsh-computer-use` ships two native desktop backends:
 
 | Platform | Session | Backend | Status |

@@ -2,6 +2,20 @@
 
 `dsh-computer-use` gives an agent real mouse and keyboard control over a desktop. That is a powerful capability, and the plugin is built to make unsafe dispatch hard — but it is **not a sandbox** and not a security boundary between the model and the operating system. This document describes the threat model, the controls that exist, and how to deploy the plugin responsibly.
 
+
+## Scope boundary: local desktop only
+
+Computer use is **local to the DSH host**. Every action is injected into the interactive OS session
+of the machine running the DSH process; a remote browser session does not extend the plugin to the
+viewer's desktop. Consequently:
+
+- Enabling this capability grants control of the host machine's desktop. Only enable it for sessions
+  and users you trust with that machine.
+- Do not deploy the DSH host on a machine whose desktop you would not hand to the agent; prefer a
+  dedicated VM or a throwaway desktop session.
+- A headless host (no X11/Windows interactive session) has no desktop to control; the plugin fails
+  closed instead of guessing.
+
 ## Scope and non-goals
 
 In scope for this document:

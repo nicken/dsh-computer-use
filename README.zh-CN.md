@@ -115,6 +115,21 @@ dsh plugin --profile web add github:nicken/dsh-computer-use
 
 插件的 `dsh` 元数据（`bundle.patch` → `cordis.patch.yml`）把 `computer-use` 条目插入 profile 组合树；`package.json` 提供 Web 客户端（`platform: web`、immediate、注入 locale）。本地开发挂载见 [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)。
 
+## 作用范围：仅 Harness 所在的那台机器
+
+插件把真实输入注入到**运行 DSH 宿主的操作系统会话**（`dsh web` 所在的那台机器）。它不是远程桌面，
+也不是浏览器里的远程控制：
+
+- 你从另一台电脑打开 DSH Web UI，agent 操作的仍然是 **Harness 宿主机的桌面**，永远不会是你正在
+  浏览的那台电脑。
+- 如果 DSH 跑在服务器、虚拟机、容器或 WSL 里，且没有可交互的桌面会话，那么没有桌面可操作
+  （Linux 需要 X11 的 `DISPLAY`；Windows 需要已解锁的交互式会话）；Wayland、无头容器和 macOS
+  均不支持。
+- DSH 页面本身只允许用户操作：插件会拒绝驱动 DSH UI，agent 无法点击自己的控制面板。
+
+要控制另一台机器，请在那台机器上安装并运行 DSH 宿主（建议用专用虚拟机），然后从任意位置连接它的
+Web UI——输入仍然发生在运行 agent 的那台机器上。
+
 ## 按会话开启
 
 电脑操作**默认关闭，按会话 opt-in**：

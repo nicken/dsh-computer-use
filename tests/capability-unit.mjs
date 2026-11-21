@@ -11,6 +11,13 @@ const fs = await import('node:fs');
 const path = await import('node:path');
 fs.rmSync(HOME, { recursive: true, force: true });
 fs.mkdirSync(HOME, { recursive: true });
+process.on('exit', () => {
+  try {
+    fs.rmSync(HOME, { recursive: true, force: true });
+  } catch {
+    /* best effort */
+  }
+});
 process.env.DSH_HOME = HOME;
 
 const SESSION = 'session-capability-test';

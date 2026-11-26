@@ -35,7 +35,8 @@
                 │ ctx.tools.register(tool, { when })             │ client
 ┌───────────────┴───────────────────────────────┐   ┌───────────┴───────┐
 │ Tool layer — index.js                         │   │ client.js         │
-│  computer_screenshot · computer               │   │  Desktop view     │
+│  computer (incl. screenshot action)           │   │  Desktop view     │
+│  advanced: computer_screenshot                │   │  tool cards       │
 │  observation tokens · intent/risk/approval    │   │  tool cards       │
 │  audit · pause · capability gate · routes     │   │  per-session      │
 │  provider-slot coexistence                    │   │  switch           │
@@ -104,7 +105,7 @@ The client contributes:
 
 - a `conversation.view` tab with id `computer-use`, order 20, localized label `Desktop` / `桌面`;
 - the per-conversation switch at the top of that tab (reads/writes `/api/computer-use/capability`);
-- `tool.call.toolview` cards for `computer_screenshot`, `computer`, and the legacy `computer_input` records;
+- `tool.call.toolview` cards for `computer` (including the `screenshot` action), the advanced `computer_screenshot` card, and the legacy `computer_input` records;
 - pause/emergency-brake/audit status from `/api/computer-use/status`;
 - screenshot images fetched through `/api/computer-use/shot`;
 - locale dictionaries under the `computerUse` namespace (English and Chinese), mirrored in `locale/en.json` and `locale/zh.json` for package metadata.
@@ -114,7 +115,7 @@ The client contributes:
 | Integration | Where | Behaviour |
 |---|---|---|
 | Plugin face | `index.js` | `export const name = "computer-use"`, `export const inject = ["tools"]`, `export function apply(ctx)`. |
-| Tool registration | `apply()` | Both tools are registered inside `ctx.effect` with `when: ({ agent }) => computerUseEnabled(agent)`. Disabling the capability removes them for the next step. |
+| Tool registration | `apply()` | The default surface registers one `computer` tool (`when: computerUseEnabled`). With `computerUseAdvanced` the standalone `computer_screenshot` tool is registered too (its `when` also requires the main switch). Disabling a capability removes its tools for the next step. |
 | Bundle patch | `package.json` → `dsh.bundle.patch` = `./cordis.patch.yml` | Inserts a `computer-use` entry named `dsh-computer-use` into the profile composition. |
 | Web client | `package.json` → `dsh.client` | `platform: "web"`, `immediately: true`, injects `@deepseek-ai/dsh-client-locale`. |
 | Provider slot | `ctx.inject(["computerUse"])` | Optional: registers the process's single `computerUse` provider. A conflict is reported by `inputcheck`/status; the tools do not depend on the slot. |

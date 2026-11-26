@@ -2,7 +2,7 @@
 
 [English](README.md) | 简体中文
 
-**一个 DeepSeek Harness（DSH）插件：给智能体两个工具——带一次性观察令牌的单屏截图，以及受意图、风险、审批、审计与紧急暂停约束的原生鼠标/键盘输入。**
+**一个 DeepSeek Harness（DSH）插件：默认只暴露一个 `computer` 工具（`screenshot` 动作 + 带一次性观察令牌的原生鼠标/键盘输入），由意图、风险、审批、审计与紧急暂停约束；可选的高级工具面会额外提供独立的 `computer_screenshot`。**
 
 它不是截图理解模型，也不是工作流引擎。插件提供的是确定性的桌面 *I/O 原语与安全层*；点什么由智能体决定，高风险动作是否放行由 DSH 的审批策略决定。
 
@@ -10,7 +10,7 @@
 - 观察 → 动作 → 再观察：每次截图生成一次性 `state_id`；每个输入动作都必须携带它，并在真正下发前重新复核。
 - 意图、风险与审批：激活动作需要一句 `intent`；风险意图、风险窗口与系统级按键会被评级并交给 DSH 审批 seam，审批不可用时失败即拒绝。
 - 内置审计与暂停：每次尝试都写入本地 JSONL 审计（绝不记录输入文本）；pause 文件存在时拒绝一切输入，只有用户能恢复。
-- 按会话开启：两个工具默认不注册，直到在会话「桌面」tab 打开开关；状态存在 `~/.dsh/capability-toggles.json`。
+- 按会话开启：工具默认不注册，直到在会话「桌面」tab 打开开关（默认一个 `computer` 工具；`computerUseAdvanced` 会额外提供 `computer_screenshot`）；状态存在 `~/.dsh/capability-toggles.json`。
 - 原生 DSH 集成：会话「桌面」视图、工具卡片、中英文 locale，以及可选的 `computerUse` provider 槽位——即使槽位被其他插件占用，工具仍可用。
 
 支持 Linux/X11 与 Windows。**不支持 Wayland 与 macOS。** 详见 [docs/PLATFORMS.md](docs/PLATFORMS.md)。
@@ -145,7 +145,7 @@ Web UI——输入仍然发生在运行 agent 的那台机器上。
 2. 打开会话视图中的**「桌面」**tab（本插件注册的 `computer-use` 视图）。
 3. 打开 **「开启电脑操作」** 开关。
 
-开关读写 `~/.dsh/capability-toggles.json`（`{ "version": 1, "sessions": { "<sessionId>": { "computerUse": true } } }`），也就是工具 `when` 谓词读取的同一个标记。开启后智能体下一步即可使用；关闭后两个工具从下一步起移除。MCP/技能管理器的会话内能力控制写同一个文件，用哪个入口都行。
+开关读写 `~/.dsh/capability-toggles.json`（`{ "version": 1, "sessions": { "<sessionId>": { "computerUse": true } } }`），也就是工具 `when` 谓词读取的同一个标记。开启后智能体下一步即可使用；关闭后已注册的工具从下一步起移除（`computer`，以及高级开关下的 `computer_screenshot`）。MCP/技能管理器的会话内能力控制写同一个文件，用哪个入口都行。
 
 开关缺失或会话没有 id 时工具保持关闭——这是有意的。
 
@@ -375,7 +375,7 @@ PNG **不会自动附加到对话**。智能体必须用图像读取工具打开
 | [docs/SECURITY.md](docs/SECURITY.md) | 威胁模型、默认边界、审批策略、部署建议、漏洞报告。 |
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | 本地 profile link、目录结构、客户端构建、代码风格、发布流程。 |
 | [docs/TESTING.md](docs/TESTING.md) | 三层测试、命令、CI 矩阵与本地复现。 |
-| [docs/TOOL-SURFACE.md](docs/TOOL-SURFACE.md) | 把 2 个工具合并为 1 个 `computer` facade + 可选「高级」开关的提案。 |
+| [docs/TOOL-SURFACE.md](docs/TOOL-SURFACE.md) | 为什么默认是 1 个 `computer` 工具，以及高级开关如何恢复 `computer_screenshot`。 |
 | [docs/demo-2026-11-10-baidu-news.md](docs/demo-2026-11-10-baidu-news.md) | 一次 Linux/X11 真机会话记录，作为回归对照。 |
 | [backends/CONTRACT.md](backends/CONTRACT.md) | 后端契约、坐标规则与不变量（中文）。 |
 | [CHANGELOG.md](CHANGELOG.md) | 版本变更。 |

@@ -117,7 +117,7 @@ On X11, any client connected to the display can inject input and capture the scr
 
 | Boundary | Default | Where |
 |---|---|---|
-| Tools exposed | Off; both tools are only registered while the conversation's switch is on | `when: ({ agent }) => computerUseEnabled(agent)` |
+| Tools exposed | Off; tools are only registered while the conversation's switch is on (default `computer`; `computer_screenshot` only with `computerUseAdvanced`) | `when: ({ agent }) => computerUseEnabled(agent)` / `computerUseEnabled(agent) && computerUseAdvanced(agent)` |
 | Input without observation | Refused (`missing_observation`) | token resolution |
 | Stale observation | Refused (`stale_observation`) before dispatch | re-proof in the adapter / Windows helper |
 | Out-of-monitor coordinates (Linux) | Refused (`invalid_args`) | `validate()` and injection-point re-check |

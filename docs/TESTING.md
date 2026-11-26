@@ -8,7 +8,8 @@ The suite is split into three layers by what they need:
 |---|---|---|---|
 | 1. Pure logic | `tests/adapter-selftest.mjs`, `backends/selftest.mjs` | Only Node | Argument validation, monitor/screen parsing, DPI, PNG codec, crop/scale, fingerprints, key tokens |
 | 2. Static platform | `tests/windows-mode-selftest.mjs` | Only Node | Windows-mode surface and pure Win32 helpers with a faked `process.platform` |
-| 3. Real X11 integration | `tests/linux-integration.mjs`, `backends/smoke-linux.mjs` | X server, `xdotool`, screenshot tool, `xprop`/`xwininfo`/`xrandr` | End-to-end tool flow against a real XTest/screenshot path |
+| 3. Capability surface | `tests/capability-unit.mjs` | Only Node | Default one-tool surface, `computerUseAdvanced` gating, capability route round-trip |
+| 4. Real X11 integration | `tests/linux-integration.mjs`, `backends/smoke-linux.mjs` | X server, `xdotool`, screenshot tool, `xprop`/`xwininfo`/`xrandr` | End-to-end tool flow against a real XTest/screenshot path |
 
 ## Commands
 
@@ -18,11 +19,16 @@ The suite is split into three layers by what they need:
 node tests/adapter-selftest.mjs
 node backends/selftest.mjs
 node tests/windows-mode-selftest.mjs
+node tests/capability-unit.mjs
 ```
 
 - `tests/adapter-selftest.mjs` — 39 checks. Exercises the Linux adapter's pure `validate()` layer: coordinate rounding, every action's required arguments, scroll defaults/anchors, type limits, keyboard chords/aliases, wait bounds, sequence limits (step count, text budget, nested sequence, per-step `state_id`), monitor-bounds rejection for each coordinate-bearing action.
 - `backends/selftest.mjs` — 85 checks. Exercises the X11 primitives without X11: CRC32/PNG decode (all filters) and encode, `xrandr --listmonitors` parsing, screen selection (`auto`/`cursor`/id/index/unknown), `xrandr --query` physical-size/DPI/rotation enrichment, capture-tool fallback (`scrot` → `import` → `xwd`), XWD decoding, fingerprint sampling/comparison, key-token resolution, negative-origin crop/encode and nearest-neighbour scaling.
-- `tests/windows-mode-selftest.mjs` — 22 checks. Fakes `process.platform = "win32"` before importing the plugin, then asserts: both tools are registered; the tool descriptions stay Windows-flavoured (no Linux/X11 wording, the hotkey sentence and SendInput diagnostics preserved); public schema stays intact; Win32 monitor parsing, screen selection (primary/`all`/id/index), capture-area region/scale math and `publicScreen()` shape. It runs on Linux, Windows and macOS alike.
+- `tests/windows-mode-selftest.mjs` — 22 checks. Fakes `process.platform = "win32"` before importing the plugin, then asserts: both tool definitions are registered (the fake context bypasses `when`; a real session defaults to one `computer` tool and only registers `computer_screenshot` with the advanced switch); the tool descriptions stay Windows-flavoured (no Linux/X11 wording, the hotkey sentence and SendInput diagnostics preserved); public schema stays intact; Win32 monitor parsing, screen selection (primary/`all`/id/index), capture-area region/scale math and `publicScreen()` shape. It runs on Linux, Windows and macOS alike.
+
+- `tests/capability-unit.mjs` — 14 checks. Mounts the plugin on a fake Cordis context with a fake `connection.fetch` route table and asserts: the default surface registers `computer` and hides `computer_screenshot`; `GET/POST /api/computer-use/capability` round-trips `enabled` and `advanced`; turning `advanced` on makes `computer_screenshot` visible; turning the main switch off hides both.
+
+`npm test` runs all four offline suites (39 + 85 + 22 + 14 checks).
 
 ### Real X11 integration
 

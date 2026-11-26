@@ -2,7 +2,7 @@
 
 English | [简体中文](README.zh-CN.md)
 
-**A DeepSeek Harness (DSH) plugin that gives an agent two tools for real desktop control: a single-monitor screenshot with a one-shot observation token, and native mouse/keyboard input guarded by intent, risk, approval, audit and an emergency pause.**
+**A DeepSeek Harness (DSH) plugin for real desktop control: one `computer` tool by default (screenshot action + native mouse/keyboard input with a one-shot observation token), guarded by intent, risk, approval, audit and an emergency pause. An opt-in advanced surface exposes the standalone `computer_screenshot` tool.**
 
 It is not a screenshot-understanding model and not a workflow engine. The plugin provides the deterministic desktop *I/O primitives and safety layer*; the agent decides what to click, and the host's approval policy decides whether a risky action is allowed.
 
@@ -10,7 +10,7 @@ It is not a screenshot-understanding model and not a workflow engine. The plugin
 - Observe → act → observe: every screenshot mints a single-use `state_id`; every input action must present it and is re-verified immediately before dispatch.
 - Intent, risk and approval: activating actions need a short `intent`; risky intents, windows and key chords are graded and routed through the DSH approval seam, which fails closed.
 - Audit and pause built in: every attempt is appended to a local JSONL audit trail (never the typed text), and a pause file blocks all input until the user releases it.
-- Opt-in per conversation: both tools are only registered after the conversation's Desktop tab switch is enabled; the flag lives in `~/.dsh/capability-toggles.json`.
+- Opt-in per conversation: tools are only registered after the conversation's Desktop tab switch is enabled (default: one `computer` tool; `computerUseAdvanced` adds the separate `computer_screenshot`); the flags live in `~/.dsh/capability-toggles.json`.
 - Native DSH integration: a Desktop conversation view, tool cards, English/Chinese locale, and an optional `computerUse` provider slot — the tools keep working even if another plugin owns that slot.
 
 Linux/X11 and Windows are supported. **Wayland and macOS are not.** See [docs/PLATFORMS.md](docs/PLATFORMS.md).
@@ -149,7 +149,7 @@ Computer use is **off by default and opt-in per conversation**:
 2. Open the **Desktop** tab in the conversation view (the tab registered by this plugin as `computer-use`).
 3. Turn on **Enable computer use**.
 
-The switch reads/writes `~/.dsh/capability-toggles.json` (`{ "version": 1, "sessions": { "<sessionId>": { "computerUse": true } } }`), which is the same flag the tools' `when` predicate checks. Enabling takes effect for the agent's next step; disabling removes both tools from the next step onward. The in-conversation capability control for MCP/skill managers writes the same file, so either surface works.
+The switch reads/writes `~/.dsh/capability-toggles.json` (`{ "version": 1, "sessions": { "<sessionId>": { "computerUse": true } } }`), which is the same flag the tools' `when` predicate checks. Enabling takes effect for the agent's next step; disabling removes the registered tools from the next step onward (`computer`, plus `computer_screenshot` when the advanced surface is on). The in-conversation capability control for MCP/skill managers writes the same file, so either surface works.
 
 If the switch is missing or the conversation has no id, the tools stay off. This is deliberate.
 
@@ -382,7 +382,7 @@ See [docs/SECURITY.md](docs/SECURITY.md) for the threat model and deployment rec
 | [docs/SECURITY.md](docs/SECURITY.md) | Threat model, default boundaries, approval policy, deployment guidance, reporting. |
 | [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md) | Local profile link setup, repository layout, client build, code style, release process. |
 | [docs/TESTING.md](docs/TESTING.md) | Three test layers, commands, CI matrix and local reproduction. |
-| [docs/TOOL-SURFACE.md](docs/TOOL-SURFACE.md) | Proposal to collapse the two tools into one `computer` facade with an opt-in advanced switch. |
+| [docs/TOOL-SURFACE.md](docs/TOOL-SURFACE.md) | Why the default surface is one `computer` tool and how the advanced switch restores `computer_screenshot`. |
 | [docs/demo-2026-11-10-baidu-news.md](docs/demo-2026-11-10-baidu-news.md) | A real-machine end-to-end session (Linux/X11) used as a regression reference. |
 | [backends/CONTRACT.md](backends/CONTRACT.md) | Backend contract, coordinate rules and invariants (Chinese). |
 | [CHANGELOG.md](CHANGELOG.md) | Version history. |
